@@ -48,7 +48,9 @@ void ASocketActor::CF_CreateSocket(FString Ip, int32 Port, int32 BufferSize)
 
 void ASocketActor::CF_CloseSocket()
 {
-	_runnable->Kill();
+	if(_runnable){
+		_runnable->Kill();
+	}
 	delete _socket;
 	_runnable = nullptr;
 	_socket = nullptr;
