@@ -18,27 +18,32 @@ void ASocketActor::BeginPlay()
 	
 }
 
-// Called every frame
-void ASocketActor::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
 
+
+void ASocketActor::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+	CF_CloseSocket();
+	Super::EndPlay(EndPlayReason);
+}
+
+void ASocketActor::Destroyed()
+{
+	CF_CloseSocket();
+	Super::Destroyed();
 }
 
 void ASocketActor::CF_ReceiveData(TArray<uint8> buffer, int32 size)
 {
-	const char * data = reinterpret_cast<const char *>(buffer.GetData());
-	UE_LOG(LogTemp,Warning,TEXT("[SocketActor][receive %d data]"),size);
-	if (data)
-	{
-		UE_LOG(LogTemp,Warning,TEXT("[SocketActor][%s]"),*FString(ANSI_TO_TCHAR(data)));
-	}
 }
 
 
 
 void ASocketActor::CF_CreateSocket(FString Ip, int32 Port, int32 BufferSize)
 {
+	_ip=Ip;
+	_port = Port;
+	_buffer_size = BufferSize;
+	
 	_socket = new SocketManager(Ip,Port,BufferSize,this);
 	if (_socket)
 	{
@@ -54,5 +59,19 @@ void ASocketActor::CF_CloseSocket()
 	delete _socket;
 	_runnable = nullptr;
 	_socket = nullptr;
+}
+
+void ASocketActor::CF_GetThreadInfo(FString& Name, uint32& ID)
+{
+	if (_runnable)
+	{
+		Name = _runnable->GetThreadName();
+		ID = _runnable->GetThreadID();
+	}
+	else
+	{
+		Name = TEXT("Error");
+		ID = 0;
+	}
 }
 
