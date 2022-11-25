@@ -16,4 +16,7 @@ class SOCKETHELPER_API ASocketExample : public ASocketActor
 
 public:
 	virtual void CF_ReceiveData(TArray<uint8> buffer, int32 size) override;
+	
+	// we need a function to handle CF_ReceiveData() function in game thread
+	void CF_HandleFunction();
 };
