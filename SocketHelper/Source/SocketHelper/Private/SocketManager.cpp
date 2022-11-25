@@ -61,10 +61,7 @@ uint32 SocketManager::Run()
 			
 			if (ret)
 			{
-				AsyncTask(ENamedThreads::GameThread,[this,&buffer,&real_data_size]()
-					{
-						_obj->CF_ReceiveData(buffer,real_data_size);
-					});
+				_obj->CF_ReceiveData(buffer,real_data_size);	
 			}
 			else
 			{
