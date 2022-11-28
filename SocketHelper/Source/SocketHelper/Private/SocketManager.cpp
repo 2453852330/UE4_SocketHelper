@@ -98,6 +98,8 @@ void SocketManager::Stop()
 	if (_socket)
 	{
 		_socket->Close();
+		delete _socket;
+		_socket = nullptr;
 	}
 }
 
