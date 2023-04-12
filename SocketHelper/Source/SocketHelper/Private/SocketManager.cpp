@@ -7,9 +7,12 @@
 #include "Sockets.h"
 #include "SocketSubsystem.h"
 
-TSharedRef<FInternetAddr> G_IPAddress = ISocketSubsystem::Get(PLATFORM_SOCKETSUBSYSTEM)->CreateInternetAddr();
 
 
+#define LOG_INFO(Info) if (_obj)\
+		{\
+			_obj->OnReceiveInfo(Info);\
+		}
 
 bool SocketManager::Init()
 {
@@ -17,30 +20,31 @@ bool SocketManager::Init()
 
 	if (!_socket)
 	{
-		UE_LOG(LogTemp,Warning,TEXT("[SocketManager][socket create failed, retry in 1s...]"));
+		LOG_INFO(TEXT("Socket Init Failed"))
 		return false;
 	}
 
 	bool bSetSuccess;
-	G_IPAddress->SetIp(*_ip,bSetSuccess);
-	G_IPAddress->SetPort(_port);
+	_ip_address = ISocketSubsystem::Get(PLATFORM_SOCKETSUBSYSTEM)->CreateInternetAddr();
+	_ip_address->SetIp(*_ip,bSetSuccess);
+	_ip_address->SetPort(_port);
 
 	if (!bSetSuccess)
 	{
-		UE_LOG(LogTemp,Warning,TEXT("[SocketManager][Set IP and Port Failed]"));
+		LOG_INFO(TEXT("Socket Port Set Failed"))
 		return false;
 	}
 
 	// connect
-	bool ret = _socket->Connect(G_IPAddress.Get());
+	bool ret = _socket->Connect(*_ip_address.Get());
 	if (!ret)
 	{
-		UE_LOG(LogTemp,Warning,TEXT("[SocketManager][socket connect failed]"));
+		LOG_INFO(TEXT("Socket Connect Failed"))
 		return false;
 	}
 
 	this->bRunning = true;
-	UE_LOG(LogTemp,Warning,TEXT("[SocketManager][Socket Connect Success]"));
+	LOG_INFO(TEXT("Socket Connect Success"))
 	return true;
 }
 
@@ -55,19 +59,20 @@ uint32 SocketManager::Run()
 			int32 real_data_size;
 			
 			// _socket->SetNonBlocking();
-			UE_LOG(LogTemp,Warning,TEXT("[SocketManager][socket recv blocking]"));
+			// UE_LOG(LogTemp,Warning,TEXT("[SocketManager][socket recv blocking]"));
 			bool ret = _socket->Recv(buffer.GetData(),_buffer_size,real_data_size);
 			// _socket->SetNonBlocking(false);
 			
 			if (ret)
 			{
-				_obj->CF_ReceiveData(buffer,real_data_size);	
+				_obj->OnReceiveData(buffer,real_data_size);	
 			}
 			else
 			{
-				UE_LOG(LogTemp,Warning,TEXT("[SocketManager][connect break , try re connect]"));
+				LOG_INFO(TEXT("Socket Connect Break , Try Reconnect after 2s"))
 				if (!bRunning)
 				{
+					LOG_INFO(TEXT("Socket Exec Finish"))
 					break;
 				}
 				FPlatformProcess::Sleep(2.f);
@@ -78,22 +83,21 @@ uint32 SocketManager::Run()
 				_socket = ISocketSubsystem::Get(PLATFORM_SOCKETSUBSYSTEM)->CreateSocket(NAME_Stream,TEXT("SOCKETHELPERINFO"));
 				if (_socket)
 				{
-					if (_socket->Connect(G_IPAddress.Get()))
+					if (_socket->Connect(*_ip_address.Get()))
 					{
-						UE_LOG(LogTemp,Warning,TEXT("[SocketManager][socket reconnect success]"));	
+						LOG_INFO(TEXT("Socket Reconnect Success"))	
 					}
 				}
 			}
 			
 		}
-		FPlatformProcess::Sleep(0.02f);
 	}	
 	return 0;
 }
 
 void SocketManager::Stop()
 {
-	UE_LOG(LogTemp,Warning,TEXT("[SocketManager][socket managet stop]"));
+	LOG_INFO(TEXT("Socket Stop Exec"))
 	bRunning = false;
 	if (_socket)
 	{
@@ -105,7 +109,7 @@ void SocketManager::Stop()
 
 void SocketManager::Exit()
 {
-	UE_LOG(LogTemp,Warning,TEXT("[SocketManager][socket manager exit]"));
+	LOG_INFO(TEXT("Socket Exit"))
 }
 
 

@@ -25,13 +25,17 @@ public:
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 	virtual void Destroyed() override;
 
-	virtual void CF_ReceiveData(TArray<uint8> buffer,int32 size);
+	// the interface for the socket actor
+	virtual void OnReceiveData(TArray<uint8> buffer,int32 size);
+	virtual void OnReceiveInfo(const FString & InString);
 
+	// the interface for bp control
 	UFUNCTION(BlueprintCallable)
 	void CF_CreateSocket(FString Ip,int32 Port,int32 BufferSize);
-	
+	UFUNCTION(BlueprintCallable)
 	void CF_CloseSocket();
 
+	
 	void CF_GetThreadInfo(FString & Name,uint32 & ID);
 	int32 CF_GetPort(){return _port;}
 	FString CF_GetIp(){return  _ip;}

@@ -32,11 +32,17 @@ void ASocketActor::Destroyed()
 	Super::Destroyed();
 }
 
-void ASocketActor::CF_ReceiveData(TArray<uint8> buffer, int32 size)
+// NOTE : Handle in GameThread
+
+void ASocketActor::OnReceiveData(TArray<uint8> buffer, int32 size)
 {
 }
 
 
+void ASocketActor::OnReceiveInfo(const FString& InString)
+{
+	UE_LOG(LogTemp,Warning,TEXT("[Socket Actor] %s "),*InString);
+}
 
 void ASocketActor::CF_CreateSocket(FString Ip, int32 Port, int32 BufferSize)
 {

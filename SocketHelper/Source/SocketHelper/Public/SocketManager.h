@@ -27,4 +27,5 @@ public:
 private:
 	bool bRunning = false;
 	FSocket * _socket = nullptr;
+	TSharedPtr<FInternetAddr> _ip_address = nullptr;
 };
